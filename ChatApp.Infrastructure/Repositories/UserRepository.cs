@@ -24,10 +24,12 @@ public class UserRepository : IUserRepository
 
     public async Task<User?> GetByUsernameAsync(string username, CancellationToken cancellationToken = default)
     {
+        username = username.ToLower();
+
         return await _context.Users
             .Include(u => u.Contacts)
             .Include(u => u.Groups)
-            .FirstOrDefaultAsync(u => u.Username == username, cancellationToken);
+            .FirstOrDefaultAsync(u => u.Username.ToLower() == username, cancellationToken);
     }
 
     public async Task AddAsync(User user, CancellationToken cancellationToken = default)

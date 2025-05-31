@@ -26,6 +26,7 @@ public class User
     {
         Id = Guid.NewGuid();
         Username = username;
+        Name = name;
         PasswordHash = passwordHash;
         CreatedAt = DateTime.UtcNow;
     }
