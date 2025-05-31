@@ -1,4 +1,5 @@
 using ChatApp.Application;
+using ChatApp.Application.Commands.Auth;
 using ChatApp.Application.Commands.Groups;
 using ChatApp.Application.Commands.Messages;
 using ChatApp.Application.Commands.Users;
@@ -6,8 +7,11 @@ using ChatApp.Domain;
 using ChatApp.Infrastructure;
 using ChatApp.Infrastructure.Persistence;
 using MediatR;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
+using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -25,12 +29,57 @@ builder.Services.AddSwaggerGen(c =>
             Name = "ChatApp Team"
         }
     });
+    
+    // Configure JWT authentication in Swagger
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme.",
+        Name = "Authorization",
+        In = ParameterLocation.Header,
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
 });
 
 // Add layers
 builder.Services.AddDomain()
     .AddApplication()
     .AddInfrastructure(builder.Configuration);
+
+// Configure JWT Authentication
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["JwtSettings:Issuer"],
+            ValidAudience = builder.Configuration["JwtSettings:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(
+                Encoding.UTF8.GetBytes(builder.Configuration["JwtSettings:SecretKey"]))
+        };
+    });
+
+builder.Services.AddAuthorization();
 
 var app = builder.Build();
 
@@ -46,6 +95,8 @@ app.UseSwaggerUI(c =>
 });
 
 app.UseHttpsRedirection();
+app.UseAuthentication();
+app.UseAuthorization();
 
 // Health check endpoint
 app.MapGet("/health", () => Results.Ok("Healthy"))
@@ -56,6 +107,23 @@ app.MapGet("/health", () => Results.Ok("Healthy"))
         operation.Description = "Returns the health status of the API";
         return operation;
     });
+
+// Auth endpoints
+app.MapPost("/auth/login", async (
+    [FromBody] LoginCommand command,
+    ISender mediator,
+    CancellationToken cancellationToken) =>
+{
+    var response = await mediator.Send(command, cancellationToken);
+    return Results.Ok(response);
+})
+.WithName("Login")
+.WithOpenApi(operation => 
+{
+    operation.Summary = "Login";
+    operation.Description = "Authenticates a user and returns a JWT token";
+    return operation;
+});
 
 // User endpoints
 app.MapPost("/users/register", async (
@@ -74,6 +142,22 @@ app.MapPost("/users/register", async (
     return operation;
 });
 
+app.MapGet("/users/me", async (HttpContext context) =>
+{
+    var userId = context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value;
+    var username = context.User.FindFirst(System.Security.Claims.ClaimTypes.Name)?.Value;
+    
+    return Results.Ok(new { Id = userId, Username = username });
+})
+.RequireAuthorization()
+.WithName("GetCurrentUser")
+.WithOpenApi(operation => 
+{
+    operation.Summary = "Get Current User";
+    operation.Description = "Returns the profile of the currently authenticated user";
+    return operation;
+});
+
 // Group endpoints
 app.MapPost("/groups", async (
     [FromBody] CreateGroupCommand command,
@@ -83,6 +167,7 @@ app.MapPost("/groups", async (
     var group = await mediator.Send(command, cancellationToken);
     return Results.Ok(group);
 })
+.RequireAuthorization()
 .WithName("CreateGroup")
 .WithOpenApi(operation => 
 {
@@ -100,6 +185,7 @@ app.MapPost("/messages", async (
     var message = await mediator.Send(command, cancellationToken);
     return Results.Ok(message);
 })
+.RequireAuthorization()
 .WithName("SendMessage")
 .WithOpenApi(operation => 
 {
