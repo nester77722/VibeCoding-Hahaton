@@ -36,4 +36,4 @@ public class LoginCommandHandler : IRequestHandler<LoginCommand, LoginResponse>
         var token = _jwtService.GenerateToken(user);
         return new LoginResponse(token, user.Username);
     }
-} 
+}
