@@ -30,5 +30,16 @@ services:
       postgres:
         condition: service_healthy
 
+  frontend:
+    build:
+      context: ./chatapp-web
+      dockerfile: Dockerfile
+    ports:
+      - "8080:80"
+    environment:
+      - VITE_CHAT_APP_API_URL=http://localhost:5000
+    depends_on:
+      - webapi
+
 volumes:
   postgres_data: 

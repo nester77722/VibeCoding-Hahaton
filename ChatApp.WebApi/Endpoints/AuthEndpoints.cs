@@ -17,7 +17,22 @@ public static class AuthEndpoints
             ISender mediator,
             CancellationToken cancellationToken) =>
         {
-            var command = new RegisterUserCommand(request.Username, request.Password);
+            if (string.IsNullOrEmpty(request.Username))
+            {
+                return Results.BadRequest("Username is required");
+            }
+
+            if (string.IsNullOrEmpty(request.Name))
+            {
+                return Results.BadRequest("Name is required");
+            }
+
+            if (string.IsNullOrEmpty(request.Password) || request.Password.Length < 6)
+            {
+                return Results.BadRequest("Password must be at least 6 characters long");
+            }
+
+            var command = new RegisterUserCommand(request.Username, request.Name, request.Password);
             var user = await mediator.Send(command, cancellationToken);
 
             return Results.Ok(new UserResponse(user.Id, user.Username, user.Name));

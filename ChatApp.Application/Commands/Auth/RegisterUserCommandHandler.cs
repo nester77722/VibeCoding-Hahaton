@@ -25,7 +25,7 @@ public class RegisterUserCommandHandler : IRequestHandler<RegisterUserCommand, U
             throw new InvalidOperationException("Username already exists");
         }
 
-        var user = new User(request.Username, request.Username, _passwordHasher.HashPassword(request.Password));
+        var user = new User(request.Username, request.Name, _passwordHasher.HashPassword(request.Password));
 
         await _userRepository.AddAsync(user);
         return user;
