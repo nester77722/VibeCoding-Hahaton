@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using ChatApp.Domain.Entities;
 
 namespace ChatApp.Application.Interfaces;
@@ -12,4 +8,5 @@ public interface IGroupRepository
     Task<IEnumerable<Group>> GetUserGroupsAsync(Guid userId, CancellationToken cancellationToken = default);
     Task AddAsync(Group group, CancellationToken cancellationToken = default);
     Task UpdateAsync(Group group, CancellationToken cancellationToken = default);
-} 
+    Task DeleteAsync(Group group);
+}
