@@ -26,7 +26,7 @@ public class ChatAppDbInitializer
         try
         {
             _logger.LogInformation("Starting database initialization...");
-            
+
             if (_context.Database.IsNpgsql())
             {
                 await _context.Database.MigrateAsync();

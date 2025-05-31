@@ -9,4 +9,4 @@ public static class DependencyInjection
         // Currently empty as we don't have any domain services to register
         return services;
     }
-} 
+}

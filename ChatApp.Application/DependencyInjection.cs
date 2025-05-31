@@ -1,6 +1,6 @@
-using System.Reflection;
 using FluentValidation;
 using Microsoft.Extensions.DependencyInjection;
+using System.Reflection;
 
 namespace ChatApp.Application;
 
@@ -10,7 +10,7 @@ public static class DependencyInjection
     {
         services.AddMediatR(cfg => cfg.RegisterServicesFromAssembly(Assembly.GetExecutingAssembly()));
         services.AddValidatorsFromAssembly(Assembly.GetExecutingAssembly());
-        
+
         return services;
     }
-} 
+}
