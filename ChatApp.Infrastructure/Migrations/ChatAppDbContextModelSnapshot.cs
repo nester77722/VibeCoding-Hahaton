@@ -28,6 +28,9 @@ namespace ChatApp.Infrastructure.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.Property<Guid>("CreatorId")
                         .HasColumnType("uuid");
 
@@ -53,23 +56,23 @@ namespace ChatApp.Infrastructure.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<Guid?>("GroupId")
+                    b.Property<Guid?>("RecipientGroupId")
                         .HasColumnType("uuid");
 
-                    b.Property<Guid?>("RecipientId")
+                    b.Property<Guid?>("RecipientUserId")
                         .HasColumnType("uuid");
 
                     b.Property<Guid>("SenderId")
                         .HasColumnType("uuid");
 
+                    b.Property<DateTime>("SentAt")
+                        .HasColumnType("timestamp with time zone");
+
                     b.HasKey("Id");
 
-                    b.HasIndex("GroupId");
+                    b.HasIndex("RecipientGroupId");
 
-                    b.HasIndex("RecipientId");
+                    b.HasIndex("RecipientUserId");
 
                     b.HasIndex("SenderId");
 
@@ -81,6 +84,13 @@ namespace ChatApp.Infrastructure.Migrations
                     b.Property<Guid>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("text");
 
                     b.Property<string>("PasswordHash")
                         .IsRequired()
@@ -139,14 +149,14 @@ namespace ChatApp.Infrastructure.Migrations
 
             modelBuilder.Entity("ChatApp.Domain.Entities.Message", b =>
                 {
-                    b.HasOne("ChatApp.Domain.Entities.Group", "Group")
+                    b.HasOne("ChatApp.Domain.Entities.Group", "RecipientGroup")
                         .WithMany("Messages")
-                        .HasForeignKey("GroupId")
+                        .HasForeignKey("RecipientGroupId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("ChatApp.Domain.Entities.User", "Recipient")
+                    b.HasOne("ChatApp.Domain.Entities.User", "RecipientUser")
                         .WithMany("ReceivedMessages")
-                        .HasForeignKey("RecipientId")
+                        .HasForeignKey("RecipientUserId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("ChatApp.Domain.Entities.User", "Sender")
@@ -155,9 +165,9 @@ namespace ChatApp.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
 
-                    b.Navigation("Group");
+                    b.Navigation("RecipientGroup");
 
-                    b.Navigation("Recipient");
+                    b.Navigation("RecipientUser");
 
                     b.Navigation("Sender");
                 });

@@ -15,7 +15,7 @@ public static class DependencyInjection
     {
         services.AddDbContext<ChatAppDbContext>(options =>
             options.UseNpgsql(configuration.GetConnectionString("DefaultConnection")));
-            
+
         services.AddScoped<IUserRepository, UserRepository>();
         services.AddScoped<IGroupRepository, GroupRepository>();
         services.AddScoped<IMessageRepository, MessageRepository>();
@@ -26,7 +26,7 @@ public static class DependencyInjection
         var jwtSettings = configuration.GetSection("JwtSettings").Get<JwtSettings>();
         services.AddSingleton(jwtSettings);
         services.AddScoped<IJwtService, JwtService>();
-        
+
         return services;
     }
-} 
+}
