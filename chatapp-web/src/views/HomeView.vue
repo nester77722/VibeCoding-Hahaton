@@ -1,89 +1,154 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useAuthStore } from '@/stores/auth'
+import Sidebar from '@/components/Sidebar.vue'
 
-const authStore = useAuthStore();
+const authStore = useAuthStore()
+const sidebarRef = ref<InstanceType<typeof Sidebar> | null>(null)
 
+function highlightSidebar() {
+  if (sidebarRef.value) {
+    sidebarRef.value.highlight()
+  }
+}
 </script>
-
 
 <template>
   <div class="home">
-    <div v-if="authStore.user" class="user-info">
-      <h1>Welcome, {{ authStore.user.name }}!</h1>
-      <div class="user-details">
-        <p><strong>Username:</strong> {{ authStore.user.username }}</p>
-        <p><strong>ID:</strong> {{ authStore.user.id }}</p>
+    <Sidebar ref="sidebarRef" class="home__sidebar" />
+    <main class="home__main">
+      <router-view v-slot="{ Component }">
+        <transition name="fade" mode="out-in">
+          <component :is="Component" />
+        </transition>
+      </router-view>
+      <div v-if="$route.path === '/'" class="welcome">
+        <h1>Welcome to VibeCoding Chat</h1>
+        <p class="subtitle">Start connecting with your team members!</p>
+
+        <div class="quick-actions">
+          <div class="action-card" @click="highlightSidebar">
+            <div class="action-card__icon">💬</div>
+            <h2>View your conversations</h2>
+            <p>Check your messages and groups</p>
+          </div>
+
+          <div class="action-card" @click="authStore.logout">
+            <div class="action-card__icon">👋</div>
+            <h2>Logout</h2>
+            <p>Sign out of your account</p>
+          </div>
+        </div>
+
+        <div class="user-info" v-if="authStore.user">
+          <p>Logged in as <strong>{{ authStore.user.name }}</strong></p>
+          <p class="username">{{ authStore.user.username }}</p>
+        </div>
       </div>
-      <button @click="authStore.logout" class="logout-btn">Logout</button>
-    </div>
-    <div v-else class="login-prompt">
-      <h2>Please log in to continue</h2>
-      <router-link to="/login" class="login-btn">Login</router-link>
-    </div>
+    </main>
   </div>
 </template>
 
 <style scoped>
 .home {
   display: flex;
+  height: 100vh;
+  background: #f8fafc;
+  overflow: hidden;
+}
+
+.home__sidebar {
+  flex-shrink: 0;
+}
+
+.home__main {
+  flex: 1;
+  overflow: hidden;
+  display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  min-height: 100vh;
+}
+
+.welcome {
   padding: 2rem;
-  background-color: #f5f6fa;
   text-align: center;
+  max-width: 800px;
+  margin: 0 auto;
+  height: 100%;
+  overflow-y: auto;
+}
+
+h1 {
+  font-size: 2.5rem;
+  color: #1e293b;
+  margin-bottom: 1rem;
+}
+
+.subtitle {
+  font-size: 1.25rem;
+  color: #64748b;
+  margin-bottom: 3rem;
+}
+
+.quick-actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.action-card {
+  background: white;
+  padding: 2rem;
+  border-radius: 1rem;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+  cursor: pointer;
+}
+
+.action-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 12px -1px rgba(0, 0, 0, 0.1);
+}
+
+.action-card__icon {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.action-card h2 {
+  font-size: 1.5rem;
+  color: #1e293b;
+  margin-bottom: 0.5rem;
+}
+
+.action-card p {
+  color: #64748b;
 }
 
 .user-info {
-  background: #fff;
-  border-radius: 12px;
-  padding: 2rem;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-}
-
-.user-details {
-  margin: 2rem 0;
-  text-align: left;
-}
-
-.user-details p {
-  margin: 0.5rem 0;
-  font-size: 1.1rem;
-}
-
-.logout-btn {
-  background: #ff4757;
-  color: white;
-  border: none;
-  padding: 0.8rem 2rem;
-  border-radius: 6px;
-  font-size: 1rem;
-  cursor: pointer;
-  transition: background 0.3s ease;
-}
-
-.logout-btn:hover {
-  background: #ff6b81;
-}
-
-.login-prompt {
-  margin-top: 4rem;
-}
-
-.login-btn {
+  margin-top: 2rem;
+  padding: 1rem;
+  background: white;
+  border-radius: 0.5rem;
   display: inline-block;
-  background: #2ed573;
-  color: white;
-  text-decoration: none;
-  padding: 1rem 3rem;
-  border-radius: 6px;
-  font-size: 1.1rem;
-  margin-top: 1rem;
-  transition: background 0.3s ease;
 }
 
-.login-btn:hover {
-  background: #7bed9f;
+.user-info p {
+  margin: 0;
+}
+
+.username {
+  color: #64748b;
+  font-size: 0.875rem;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
 }
 </style>

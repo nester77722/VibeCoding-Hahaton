@@ -16,7 +16,6 @@ public static class MessageEndpoints
         group.MapGet("/", async (
             [FromQuery] Guid? contactId,
             [FromQuery] Guid? groupId,
-            [FromQuery] Guid? senderId,
             HttpContext context,
             ISender mediator,
             CancellationToken cancellationToken,
@@ -34,7 +33,7 @@ public static class MessageEndpoints
             }
 
             var userId = Guid.Parse(context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!);
-            var result = await mediator.Send(new GetMessagesQuery(userId, contactId, groupId, senderId, page, pageSize), cancellationToken);
+            var result = await mediator.Send(new GetMessagesQuery(userId, contactId, groupId, page, pageSize), cancellationToken);
 
             return Results.Ok(new PaginatedResponse<MessageResponse>(
                 result.Items.Select(m => new MessageResponse(

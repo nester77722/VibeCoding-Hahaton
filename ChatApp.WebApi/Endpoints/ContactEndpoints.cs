@@ -20,7 +20,7 @@ public static class ContactEndpoints
             var userId = Guid.Parse(context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!);
             var contacts = await mediator.Send(new GetUserContactsQuery(userId), cancellationToken);
 
-            return Results.Ok(contacts.Select(c => new ContactResponse(c.Id, c.Username, c.AddedAt)));
+            return Results.Ok(contacts.Select(c => new ContactResponse(c.Id, c.Username, c.Name, c.AddedAt)));
         })
         .WithName("GetContacts")
         .WithOpenApi(operation =>
@@ -39,7 +39,7 @@ public static class ContactEndpoints
             var userId = Guid.Parse(context.User.FindFirst(System.Security.Claims.ClaimTypes.NameIdentifier)?.Value!);
             var contact = await mediator.Send(new AddContactCommand(userId, request.UserId), cancellationToken);
 
-            return Results.Ok(new ContactResponse(contact.Id, contact.Username, contact.AddedAt));
+            return Results.Ok(new ContactResponse(contact.Id, contact.Username, contact.Name, contact.AddedAt));
         })
         .WithName("AddContact")
         .WithOpenApi(operation =>

@@ -1,21 +1,25 @@
 <script setup lang="ts">
 import { RouterLink, RouterView } from 'vue-router'
-import HelloWorld from './components/HelloWorld.vue'
 </script>
 
 <template>
   <div class="app">
-    <router-view />
+    <main class="main-content">
+      <router-view></router-view>
+    </main>
   </div>
 </template>
 
-<style scoped>
+<style>
 .app {
   display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
+  height: 100vh;
   overflow: hidden;
-  background: #ffffff;
+}
+
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  background-color: #f8fafc;
 }
 </style>

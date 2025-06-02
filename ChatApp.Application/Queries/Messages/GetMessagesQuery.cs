@@ -7,7 +7,6 @@ public record GetMessagesQuery(
     Guid UserId,
     Guid? RecipientUserId,
     Guid? RecipientGroupId,
-    Guid? SenderId,
     int Page = 1,
     int PageSize = 20
 ) : IRequest<PaginatedResult<MessageDto>>;

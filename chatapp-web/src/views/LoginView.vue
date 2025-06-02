@@ -1,5 +1,5 @@
 <template>
-    <div class="login">
+    <div v-if="!authStore.user" class="login">
         <h1>Login</h1>
         <form @submit.prevent="handleSubmit" class="login-form">
             <div class="form-group">
@@ -23,9 +23,19 @@
 </template>
 
 <script setup lang="ts">
-import { ref } from 'vue'
+import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
+
+onMounted(async () => {
+    if (authStore.token) {
+        await authStore.fetchUser();
+    }
+
+    if (authStore.user) {
+        router.push('/');
+    }
+});
 
 const router = useRouter()
 const authStore = useAuthStore()
